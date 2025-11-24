@@ -71,60 +71,142 @@
         {% else %}
         <button class="btn disabled" disabled>Sold Out</button>
         {% endif %}
-      </div>
-    </article>
-    {% endfor %}
-  </div>
-</section>
+        {% extends "base.html" %}
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    {% for property in properties %}
-    fetch('/api/history/{{ property.id }}')
-      .then(response => response.json())
-      .then(data => {
-        const ctx = document.getElementById('chart-{{ property.id }}').getContext('2d');
-        const labels = data.map(d => d.timestamp);
-        const prices = data.map(d => d.price);
+        {% block title %}Dashboard — BrickX{% endblock %}
 
-        const gradient = ctx.createLinearGradient(0, 0, 0, 100);
-        gradient.addColorStop(0, 'rgba(0, 242, 255, 0.5)');
-        gradient.addColorStop(1, 'rgba(0, 242, 255, 0)');
+        {% block head %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        {% endblock %}
 
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              data: prices,
-              borderColor: '#00f2ff',
-              backgroundColor: gradient,
-              borderWidth: 2,
-              pointRadius: 0,
-              fill: true,
-              tension: 0.4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: { enabled: false }
-            },
-            scales: {
-              x: { display: false },
-              y: { display: false }
-            },
-            interaction: {
-              mode: 'nearest',
-              axis: 'x',
-              intersect: false
-            }
-          }
-        });
-      });
-    {% endfor %}
+        {% block content %}
+        <header class="dash-header">
+          <div>
+            <h2 class="glow">Dashboard</h2>
+            <p class="muted">Welcome, <strong><a href="{{ url_for('main.profile') }}"
+                  style="color: inherit; text-decoration: underline;">{{ current_user.username }}</a></strong></p>
+          </div>
+          <div class="balance">
+            <div class="balance-label">Balance</div>
+            <div class="balance-amount">${{ "%.2f"|format(current_user.balance) }} <a
+                href="{{ url_for('main.profile') }}"
+                style="font-size: 0.6em; vertical-align: middle; text-decoration: none;">➕</a></div>
+          </div>
+        </header>
+
+        <section>
+          <h3 class="section-title">Your Portfolio</h3>
+          {% if portfolio %}
+          <div class="card-grid">
+            {% for item in portfolio %}
+            {% set image_name = item.property_name|replace(' ', '_') ~ '.jpg' %}
+            <article class="prop-card">
+              <div class="prop-thumb"
+                style="background-image: url('{{ url_for('static', filename='images/' ~ image_name) if image_name in existing_images else url_for('static', filename='images/default.jpg') }}')">
+              </div>
+              <div class="prop-body">
+                <h4>{{ item.property_name }}</h4>
+                <p>Fractions: <strong>{{ item.fractions_owned }}</strong></p>
+                <p>Equity: <strong>${{ "%.2f"|format(item.equity) }}</strong></p>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="muted">You don’t own any fractions yet. Browse properties below to start investing.</p>
+          {% endif %}
+        </section>
+
+        <hr class="divider" style="margin: 40px 0; border-color: var(--glass-border);">
+
+        <section>
+          <h3 class="section-title">Market Trends</h3>
+          <div class="card-grid">
+            {% for property in properties %}
+            {% set image_name = property.name|replace(' ', '_') ~ '.jpg' %}
+            <article class="market-card"
+              onclick="window.location.href='{{ url_for('main.property_details', property_id=property.id) }}'"
+              style="cursor: pointer;">
+              <div class="market-thumb"
+                style="background-image: url('{{ url_for('static', filename='images/' ~ image_name) if image_name in existing_images else url_for('static', filename='images/default.jpg') }}')">
+              </div>
+              <div class="market-body">
+                <h4>{{ property.name }}</h4>
+                <p>Total Value: <strong>${{ "%.2f"|format(property.total_value) }}</strong></p>
+                <p>Available: <strong>{{ property.available_fractions }}</strong> / {{ property.total_fractions }}</p>
+                <p>Price / Fraction: <strong>${{ "%.2f"|format(property.total_value / property.total_fractions)
+                    }}</strong></p>
+
+                <div style="height: 100px; width: 100%; margin: 10px 0;">
+                  <canvas id="chart-{{ property.id }}"></canvas>
+                </div>
+
+                {% if property.available_fractions > 0 %}
+                <a class="btn glow-btn" href="{{ url_for('main.buy', property_id=property.id) }}">Buy</a>
+                {% else %}
+                <button class="btn disabled" disabled>Sold Out</button>
+                {% endif %}
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        </section>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            const propertyIds = {{ properties| map(attribute = 'id') | list | tojson
+          }};
+
+          propertyIds.forEach(id => {
+            fetch(`/api/history/${id}`)
+              .then(response => response.json())
+              .then(data => {
+                const canvas = document.getElementById(`chart-${id}`);
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const labels = data.map(d => d.timestamp);
+                const prices = data.map(d => d.price);
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+                gradient.addColorStop(0, 'rgba(0, 242, 255, 0.5)');
+                gradient.addColorStop(1, 'rgba(0, 242, 255, 0)');
+
+                new Chart(ctx, {
+                  type: 'line',
+                  data: {
+                    labels: labels,
+                    datasets: [{
+                      data: prices,
+                      borderColor: '#00f2ff',
+                      backgroundColor: gradient,
+                      borderWidth: 2,
+                      pointRadius: 0,
+                      fill: true,
+                      tension: 0.4
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: { enabled: false }
+                    },
+                    scales: {
+                      x: { display: false },
+                      y: { display: false }
+                    },
+                    interaction: {
+                      mode: 'nearest',
+                      axis: 'x',
+                      intersect: false
+                    }
+                  }
+                });
+              })
+              .catch(err => console.error('Error loading chart:', err));
+          });
   });
-</script>
-{% endblock %}
+        </script>
+        {% endblock %}
