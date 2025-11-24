@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Purchase Successful — PropMetrix{% endblock %}
+{% block content %}
+<div class="success-container" style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 0 auto;">
+    <div class="glass-panel">
+        <div class="icon-pulse" style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+        <h1 class="glow" style="margin-bottom: 10px;">Purchase Successful!</h1>
+        <p class="lead" style="color: var(--text-muted); margin-bottom: 30px;">You are now a fractional owner of
+            <strong>{{ property_name }}</strong>.</p>
+
+        <div class="actions" style="display: flex; gap: 20px; justify-content: center;">
+            <a href="{{ url_for('main.dashboard') }}" class="btn glow-btn">View Portfolio</a>
+            <a href="{{ url_for('main.home') }}" class="btn ghost">Browse More</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

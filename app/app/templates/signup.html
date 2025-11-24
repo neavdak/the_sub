@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sign Up — PropMetrix{% endblock %}
+{% block content %}
+<h2 class="form-title glow">Create Account</h2>
+<form method="POST" action="{{ url_for('main.signup') }}" class="auth-form" id="signupForm" novalidate>
+  <label for="username">Username</label>
+  <input id="username" name="username" type="text" required>
+
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" minlength="6" required>
+
+  <input type="submit" class="btn" value="Sign Up">
+  <p class="muted">Already a member? <a href="{{ url_for('main.login') }}">Log in</a></p>
+</form>
+{% endblock %}

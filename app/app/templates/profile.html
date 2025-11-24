@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Profile — PropMetrix{% endblock %}
+{% block content %}
+<header class="dash-header">
+    <h2 class="glow">My Profile</h2>
+    <a href="{{ url_for('main.dashboard') }}" class="btn ghost">Back to Dashboard</a>
+</header>
+
+<section class="auth-form" style="max-width: 600px;">
+    <div class="profile-info">
+        <label>Username</label>
+        <div class="info-box">{{ current_user.username }}</div>
+
+        <label>Current Balance</label>
+        <div class="info-box balance-amount">${{ "%.2f"|format(current_user.balance) }}</div>
+    </div>
+
+    <hr class="divider">
+
+    <h3 class="section-title">Add Funds</h3>
+    <form method="POST" action="{{ url_for('main.add_funds') }}"
+        style="display: flex; gap: 10px; align-items: flex-end;">
+        <div style="flex-grow: 1;">
+            <label for="amount">Amount ($)</label>
+            <input id="amount" name="amount" type="number" min="10" step="10" value="100" required>
+        </div>
+        <input type="submit" class="btn" value="Add Funds">
+    </form>
+</section>
+
+<style>
+    .info-box {
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(0, 0, 0, 0.25);
+        color: #e8ffff;
+        margin-bottom: 16px;
+        font-size: 1.1em;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — BrickX{% endblock %}
+
+{% block content %}
+<header class="dash-header">
+  <div>
+    <h2 class="glow">Dashboard</h2>
+    <p class="muted">Welcome, <strong><a href="{{ url_for('main.profile') }}"
+          style="color: inherit; text-decoration: underline;">{{ current_user.username }}</a></strong></p>
+  </div>
+  <div class="balance">
+    <div class="balance-label">Balance</div>
+    <div class="balance-amount">${{ "%.2f"|format(current_user.balance) }} <a href="{{ url_for('main.profile') }}"
+        style="font-size: 0.6em; vertical-align: middle; text-decoration: none;">➕</a></div>
+  </div>
+</header>
+
+<section>
+  <h3 class="section-title">Your Portfolio</h3>
+  {% if portfolio %}
+  <div class="card-grid">
+    {% for item in portfolio %}
+    {% set image_name = item.property_name|replace(' ', '_') ~ '.jpg' %}
+    <article class="prop-card">
+      <div class="prop-thumb"
+        style="background-image: url('{{ url_for('static', filename='images/' ~ image_name) if image_name in existing_images else url_for('static', filename='images/default.jpg') }}')">
+      </div>
+      <div class="prop-body">
+        <h4>{{ item.property_name }}</h4>
+        <p>Fractions: <strong>{{ item.fractions_owned }}</strong></p>
+        <p>Equity: <strong>${{ "%.2f"|format(item.equity) }}</strong></p>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">You don’t own any fractions yet. Browse properties below to start investing.</p>
+  {% endif %}
+</section>
+
+<hr class="divider" style="margin: 40px 0; border-color: var(--glass-border);">
+
+<section>
+  <h3 class="section-title">Available Properties</h3>
+  <div class="card-grid">
+    {% for property in properties %}
+    {% set image_name = property.name|replace(' ', '_') ~ '.jpg' %}
+    <article class="market-card"
+      onclick="window.location.href='{{ url_for('main.property_details', property_id=property.id) }}'"
+      style="cursor: pointer;">
+      <div class="market-thumb"
+        style="background-image: url('{{ url_for('static', filename='images/' ~ image_name) if image_name in existing_images else url_for('static', filename='images/default.jpg') }}')">
+      </div>
+      <div class="market-body">
+        <h4>{{ property.name }}</h4>
+        <p>Total Value: <strong>${{ "%.2f"|format(property.total_value) }}</strong></p>
+        <p>Available: <strong>{{ property.available_fractions }}</strong> / {{ property.total_fractions }}</p>
+        <p>Price / Fraction: <strong>${{ "%.2f"|format(property.total_value / property.total_fractions) }}</strong></p>
+
+        {% if property.available_fractions > 0 %}
+        <a class="btn glow-btn" href="{{ url_for('main.buy', property_id=property.id) }}">Buy</a>
+        {% else %}
+        <button class="btn disabled" disabled>Sold Out</button>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

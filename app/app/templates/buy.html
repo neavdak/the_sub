@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Checkout — {{ property.name }}{% endblock %}
+{% block content %}
+<div class="checkout-container" style="max-width: 800px; margin: 0 auto;">
+  <header class="dash-header">
+    <h2 class="glow">Checkout</h2>
+    <a href="{{ url_for('main.property_details', property_id=property.id) }}" class="btn ghost">Cancel</a>
+  </header>
+
+  <div class="glass-panel">
+    <div class="checkout-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+
+      <div class="order-summary">
+        <h3 class="section-title">Order Summary</h3>
+        <div class="summary-item">
+          <span class="label">Property</span>
+          <span class="value">{{ property.name }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Price per Fraction</span>
+          <span class="value">${{ "{:,.2f}".format(property.total_value / property.total_fractions) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Available Fractions</span>
+          <span class="value" id="available">{{ property.available_fractions }}</span>
+        </div>
+
+        <hr class="divider" style="margin: 20px 0; border-color: var(--glass-border);">
+
+        <div class="summary-item highlight">
+          <span class="label">Your Balance</span>
+          <span class="value">${{ "{:,.2f}".format(current_user.balance) }}</span>
+        </div>
+      </div>
+
+      <div class="payment-form">
+        <h3 class="section-title">Confirm Purchase</h3>
+        <form method="POST" action="{{ url_for('main.buy', property_id=property.id) }}">
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="fractions">Number of Fractions</label>
+            <input type="number" id="fractions" name="fractions" min="1" max="{{ property.available_fractions }}"
+              value="1" required>
+          </div>
+
+          <div class="total-box"
+            style="background: rgba(0, 242, 255, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+            <div class="label" style="color: var(--primary); font-size: 0.9em; text-transform: uppercase;">Total Cost
+            </div>
+            <div class="value" id="totalCost" style="font-size: 2em; font-weight: 800; color: #fff;">$0.00</div>
+          </div>
+
+          <button type="submit" class="btn glow-btn full-width" id="confirmBtn">Confirm Purchase</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+  }
+
+  .summary-item .label {
+    color: var(--text-muted);
+  }
+
+  .summary-item .value {
+    font-weight: 600;
+  }
+
+  .summary-item.highlight .value {
+    color: var(--primary);
+  }
+
+  @media (max-width: 768px) {
+    .checkout-grid {
+      grid-template-columns: 1fr !important;
+      gap: 20px !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    const ppf = {{ property.total_value / property.total_fractions
+  }};
+  const fracInput = document.getElementById('fractions');
+  const totalCost = document.getElementById('totalCost');
+  const available = {{ property.available_fractions }};
+  const userBalance = {{ current_user.balance }};
+  const confirmBtn = document.getElementById('confirmBtn');
+
+  function updateCost() {
+    const n = parseInt(fracInput.value) || 0;
+    const cost = n * ppf;
+
+    if (n < 1) {
+      totalCost.innerText = '$0.00';
+      confirmBtn.disabled = true;
+      confirmBtn.classList.add('disabled');
+    } else {
+      totalCost.innerText = '$' + cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      if (n > available || cost > userBalance) {
+        confirmBtn.disabled = true;
+        confirmBtn.classList.add('disabled');
+        totalCost.style.color = 'var(--accent)'; // Red for error
+      } else {
+        confirmBtn.disabled = false;
+        confirmBtn.classList.remove('disabled');
+        totalCost.style.color = '#fff';
+      }
+    }
+  }
+
+  if (fracInput) {
+    fracInput.addEventListener('input', updateCost);
+    // Initial update
+    updateCost();
+  }
+  }) ();
+</script>
+{% endblock %}

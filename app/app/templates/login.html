@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Login — PropMetrix{% endblock %}
+{% block content %}
+<h2 class="form-title glow">Log In</h2>
+<form method="POST" class="auth-form" id="loginForm" action="{{ url_for('main.login') }}" novalidate>
+  <label for="username">Username</label>
+  <input id="username" name="username" type="text" required>
+
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" required>
+
+  <input type="submit" class="btn" value="Log In">
+  <p class="muted">Don't have an account? <a href="{{ url_for('main.signup') }}">Sign up</a></p>
+</form>
+{% endblock %}

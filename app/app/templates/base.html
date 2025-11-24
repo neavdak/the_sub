@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block title %}Real Estate Metaverse{% endblock %}</title>
+
+    <!-- Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Background video (optional). Put /static/videos/bg.mp4 -->
+  <div class="bg-media">
+    <video autoplay muted loop id="bg-video" playsinline>
+      <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+    </video>
+    <div class="bg-gradient"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header class="site-header">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo" class="logo">
+      <div class="brand-text">
+        <span class="brand-title">PropMetrix</span>
+        <span class="brand-sub">Fractional Real Estate</span>
+      </div>
+    </div>
+
+    <nav class="site-nav">
+      <a href="{{ url_for('main.home') }}">Home</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('main.logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('main.login') }}">Login</a>
+        <a href="{{ url_for('main.signup') }}">Sign Up</a>
+      {% endif %}
+    </nav>
+
+    <button id="menuToggle" class="menu-toggle" aria-label="menu">&#9776;</button>
+  </header>
+
+  <!-- Responsive mobile nav -->
+  <nav id="mobileNav" class="mobile-nav">
+    <a href="{{ url_for('main.home') }}">Home</a>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('main.logout') }}">Logout</a>
+    {% else %}
+      <a href="{{ url_for('main.login') }}">Login</a>
+      <a href="{{ url_for('main.signup') }}">Sign Up</a>
+    {% endif %}
+  </nav>
+
+  <!-- Flashes -->
+  <div class="flash-wrap">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Content card -->
+  <main class="content">
+    <div class="glass">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div>© {{ (2000|int) + 25 }} PropMetrix — Built for the future</div>
+    <div class="credits">Made with ✨</div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+<video autoplay muted loop id="bg-video">
+  <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+</video>
+<div class="overlay"></div>
